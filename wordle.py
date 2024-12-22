@@ -36,6 +36,7 @@ def calc_guesses(guesses, answer):
                 if not layout_dict[letter]:
                     layout_dict[letter] = f"{ORANGE}{letter}{RESET}"
                 clue[i] = f"{ORANGE}{letter}{RESET}"
+                remaining_letters[i] = None
             else:
                 if not layout_dict[letter]:
                     layout_dict[letter] = f"{RED}{letter}{RESET}"
