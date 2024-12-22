@@ -24,7 +24,8 @@ def calc_guesses(guesses, answer):
         for i, letter in enumerate(guess):
 
             if letter == answer[i]:
-                layout_dict[letter] = f"{GREEN}{letter}{RESET}"
+                if not layout_dict[letter] or layout_dict[letter].startswith(ORANGE):
+                    layout_dict[letter] = f"{GREEN}{letter}{RESET}"
                 clue[i] = f"{GREEN}{letter}{RESET}"
                 remaining_letters[i] = None
         
@@ -32,10 +33,12 @@ def calc_guesses(guesses, answer):
             if clue[i]:
                 continue
             if letter in remaining_letters:
-                layout_dict[letter] = f"{ORANGE}{letter}{RESET}"
+                if not layout_dict[letter]:
+                    layout_dict[letter] = f"{ORANGE}{letter}{RESET}"
                 clue[i] = f"{ORANGE}{letter}{RESET}"
             else:
-                layout_dict[letter] = f"{RED}{letter}{RESET}"
+                if not layout_dict[letter]:
+                    layout_dict[letter] = f"{RED}{letter}{RESET}"
                 clue[i] = f"{RED}{letter}{RESET}"
 
         clues.append(''.join(clue))
