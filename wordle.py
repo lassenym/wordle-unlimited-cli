@@ -11,45 +11,47 @@ LAYOUT = [['Q', 'W', 'E', 'R', 'T', 'Z', 'U', 'I', 'O', 'P'], ['A', 'S', 'D', 'F
 
 def db_connect():
     conn = sqlite3.connect(os.path.join(os.path.dirname(os.path.abspath(__file__)), "wordle.db"))
-    return conn, conn.cursor()  
+    return conn, conn.cursor()
 
 def calc_guesses(guesses, answer):
     layout_dict = {key: '' for row in LAYOUT for key in row}
-    clue = [""] * 5
     clues = []
 
     for guess in guesses:
 
         remaining_letters = list(answer)
+        clue = [""] * 5
+
         for i, letter in enumerate(guess):
 
             if letter == answer[i]:
                 if not layout_dict[letter] or layout_dict[letter].startswith(ORANGE):
                     layout_dict[letter] = f"{GREEN}{letter}{RESET}"
                 clue[i] = f"{GREEN}{letter}{RESET}"
-                remaining_letters[i] = None
-        
-        for i, letter in enumerate(guess):
-            if clue[i]:
-                continue
-            if letter in remaining_letters:
+                if letter in remaining_letters:
+                    remaining_letters[remaining_letters.index(letter)] = None
+
+            elif letter in remaining_letters:
                 if not layout_dict[letter]:
                     layout_dict[letter] = f"{ORANGE}{letter}{RESET}"
                 clue[i] = f"{ORANGE}{letter}{RESET}"
-                remaining_letters[i] = None
+                remaining_letters[remaining_letters.index(letter)] = None
+
             else:
                 if not layout_dict[letter]:
                     layout_dict[letter] = f"{RED}{letter}{RESET}"
                 clue[i] = f"{RED}{letter}{RESET}"
+                if letter in remaining_letters:
+                    remaining_letters[remaining_letters.index(letter)] = None
 
         clues.append(''.join(clue))
-        clue = [""] * 5
+        
 
     return layout_dict, clues
 
 def print_clues(layout_dict, clues):
 
-    print("\n" * (shutil.get_terminal_size().lines - 5 - len(clues)))
+    print("\n" * (shutil.get_terminal_size().lines - 6 - len(clues)))
         
     for line in LAYOUT:
         print("\n                  " + ((10-len(line)) * " "), end="")
@@ -70,14 +72,12 @@ def print_clues(layout_dict, clues):
 
 def game():
     conn, cursor = db_connect()
-
     answer = cursor.execute("SELECT * FROM answer_words ORDER BY RANDOM() LIMIT 1;").fetchall()[0][0]
     valid_guesses = [row[0] for row in cursor.execute("SELECT * FROM valid_words").fetchall()]
     conn.close()
 
     guesses = []
     guessed_letters = []
-    
 
     while True:
 
