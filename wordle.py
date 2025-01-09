@@ -18,36 +18,34 @@ def calc_guesses(guesses, answer):
     clues = []
 
     for guess in guesses:
+        remaining_letters = list(answer) 
+        clue = [""] * len(answer)
 
-        remaining_letters = list(answer)
-        clue = [""] * 5
 
         for i, letter in enumerate(guess):
-
             if letter == answer[i]:
-                if not layout_dict[letter] or layout_dict[letter].startswith(ORANGE):
-                    layout_dict[letter] = f"{GREEN}{letter}{RESET}"
                 clue[i] = f"{GREEN}{letter}{RESET}"
-                if letter in remaining_letters:
-                    remaining_letters[remaining_letters.index(letter)] = None
+                layout_dict[letter] = f"{GREEN}{letter}{RESET}"
+                remaining_letters[i] = None  
 
-            elif letter in remaining_letters:
-                if not layout_dict[letter]:
-                    layout_dict[letter] = f"{ORANGE}{letter}{RESET}"
-                clue[i] = f"{ORANGE}{letter}{RESET}"
-                remaining_letters[remaining_letters.index(letter)] = None
 
+        for i, letter in enumerate(guess):
+            if clue[i]:
+                continue
+
+            if letter in remaining_letters:
+                clue[i] = f"{ORANGE}{letter}{RESET}"  # Orange case
+                layout_dict[letter] = f"{ORANGE}{letter}{RESET}"
+                remaining_letters[remaining_letters.index(letter)] = None 
             else:
+                clue[i] = f"{RED}{letter}{RESET}"
                 if not layout_dict[letter]:
                     layout_dict[letter] = f"{RED}{letter}{RESET}"
-                clue[i] = f"{RED}{letter}{RESET}"
-                if letter in remaining_letters:
-                    remaining_letters[remaining_letters.index(letter)] = None
 
         clues.append(''.join(clue))
-        
 
     return layout_dict, clues
+
 
 def print_clues(layout_dict, clues):
 
@@ -60,7 +58,7 @@ def print_clues(layout_dict, clues):
                 print(layout_dict[letter], end=" ")
             else:
                 print(letter, end=" ")
-    
+
     print()
     for clue in clues:
         print(clue)
@@ -72,8 +70,9 @@ def print_clues(layout_dict, clues):
 
 def game():
     conn, cursor = db_connect()
-    answer = cursor.execute("SELECT * FROM answer_words ORDER BY RANDOM() LIMIT 1;").fetchall()[0][0]
-    valid_guesses = [row[0] for row in cursor.execute("SELECT * FROM valid_words").fetchall()]
+    answer = cursor.execute("SELECT word FROM answer_words ORDER BY RANDOM() LIMIT 1;").fetchall()[0][0]
+    valid_guesses = [row[0] for row in cursor.execute("SELECT word FROM valid_words").fetchall()]
+    answer = "BUDGE"
     conn.close()
 
     guesses = []
@@ -82,6 +81,9 @@ def game():
     while True:
 
         guess = input().upper()
+
+        if guess == 'EXIT' or guess == 'QUIT':
+            exit()
 
         if len(guess) != 5:
             print(f"{RED}Only 5-letter words are allowed! Try again!{RESET}")        
@@ -99,7 +101,7 @@ def game():
         if len(guesses) > 5:
             print(f"{RED}You lose! :({RESET} The word was {BLUE}{answer}{RESET}")  
             break
-        
+
 if __name__ == "__main__":
     print(f"{BLUE}Let's go! Start guessing:{RESET}\n")
     game()
