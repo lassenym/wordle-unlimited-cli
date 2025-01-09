@@ -72,7 +72,6 @@ def game():
     conn, cursor = db_connect()
     answer = cursor.execute("SELECT word FROM answer_words ORDER BY RANDOM() LIMIT 1;").fetchall()[0][0]
     valid_guesses = [row[0] for row in cursor.execute("SELECT word FROM valid_words").fetchall()]
-    answer = "BUDGE"
     conn.close()
 
     guesses = []
